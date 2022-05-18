@@ -78,6 +78,322 @@ export class HomeClient implements IHomeClient {
     }
 }
 
+export interface IClientsClient {
+    get(): Observable<ClientDto[]>;
+    createClient(command: CreateClientCommand): Observable<string>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ClientsClient implements IClientsClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    get(): Observable<ClientDto[]> {
+        let url_ = this.baseUrl + "/api/Clients";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGet(<any>response_);
+                } catch (e) {
+                    return <Observable<ClientDto[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<ClientDto[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGet(response: HttpResponseBase): Observable<ClientDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(ClientDto.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<ClientDto[]>(<any>null);
+    }
+
+    createClient(command: CreateClientCommand): Observable<string> {
+        let url_ = this.baseUrl + "/api/Clients";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreateClient(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreateClient(<any>response_);
+                } catch (e) {
+                    return <Observable<string>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<string>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processCreateClient(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<string>(<any>null);
+    }
+}
+
+export class ClientDto implements IClientDto {
+    id?: string;
+    name?: string;
+    address?: Address;
+    email?: string;
+    phone?: string;
+
+    constructor(data?: IClientDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.address = _data["address"] ? Address.fromJS(_data["address"]) : <any>undefined;
+            this.email = _data["email"];
+            this.phone = _data["phone"];
+        }
+    }
+
+    static fromJS(data: any): ClientDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ClientDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["address"] = this.address ? this.address.toJSON() : <any>undefined;
+        data["email"] = this.email;
+        data["phone"] = this.phone;
+        return data; 
+    }
+}
+
+export interface IClientDto {
+    id?: string;
+    name?: string;
+    address?: Address;
+    email?: string;
+    phone?: string;
+}
+
+export abstract class ValueObject implements IValueObject {
+
+    constructor(data?: IValueObject) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+    }
+
+    static fromJS(data: any): ValueObject {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'ValueObject' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        return data; 
+    }
+}
+
+export interface IValueObject {
+}
+
+export class Address extends ValueObject implements IAddress {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zipCode?: string;
+
+    constructor(data?: IAddress) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.street = _data["street"];
+            this.city = _data["city"];
+            this.state = _data["state"];
+            this.country = _data["country"];
+            this.zipCode = _data["zipCode"];
+        }
+    }
+
+    static fromJS(data: any): Address {
+        data = typeof data === 'object' ? data : {};
+        let result = new Address();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["street"] = this.street;
+        data["city"] = this.city;
+        data["state"] = this.state;
+        data["country"] = this.country;
+        data["zipCode"] = this.zipCode;
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IAddress extends IValueObject {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zipCode?: string;
+}
+
+export class CreateClientCommand implements ICreateClientCommand {
+    name?: string;
+    email?: string;
+    phone?: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+
+    constructor(data?: ICreateClientCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.email = _data["email"];
+            this.phone = _data["phone"];
+            this.street = _data["street"];
+            this.city = _data["city"];
+            this.state = _data["state"];
+            this.zipCode = _data["zipCode"];
+            this.country = _data["country"];
+        }
+    }
+
+    static fromJS(data: any): CreateClientCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateClientCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["email"] = this.email;
+        data["phone"] = this.phone;
+        data["street"] = this.street;
+        data["city"] = this.city;
+        data["state"] = this.state;
+        data["zipCode"] = this.zipCode;
+        data["country"] = this.country;
+        return data; 
+    }
+}
+
+export interface ICreateClientCommand {
+    name?: string;
+    email?: string;
+    phone?: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+}
+
 export interface FileResponse {
     data: Blob;
     status: number;

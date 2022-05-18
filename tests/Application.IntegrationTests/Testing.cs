@@ -1,4 +1,9 @@
-﻿using CleanArchitecture.Application.Common.Interfaces;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Application.IntegrationTests.Common.DataBaseFakers;
+using CleanArchitecture.Application.Common.Interfaces;
 using CleanArchitecture.Infrastructure.Identity;
 using CleanArchitecture.Infrastructure.Persistence;
 using CleanArchitecture.WebUI;
@@ -11,8 +16,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 using Respawn;
+using Respawn.Graph;
 
-namespace CleanArchitecture.Application.IntegrationTests;
+namespace Application.IntegrationTests;
 
 [SetUpFixture]
 public class Testing
@@ -21,6 +27,8 @@ public class Testing
     private static IServiceScopeFactory _scopeFactory = null!;
     private static Checkpoint _checkpoint = null!;
     private static string? _currentUserId;
+    
+    public static IServiceScopeFactory ScopeFactory => _scopeFactory;
 
     [OneTimeSetUp]
     public void RunBeforeAnyTests()
@@ -62,7 +70,7 @@ public class Testing
 
         _checkpoint = new Checkpoint
         {
-            TablesToIgnore = new[] { "__EFMigrationsHistory" }
+            TablesToIgnore = new Table[] { "__EFMigrationsHistory" }
         };
 
         EnsureDatabase();

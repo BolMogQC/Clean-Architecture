@@ -1,0 +1,1 @@
+dotnet ef migrations add "%1" --project src\Infrastructure --startup-project src\WebUI --output-dir Persistence\Migrations

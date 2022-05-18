@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using CleanArchitecture.Application.Common.Interfaces;
 using CleanArchitecture.Domain.Common;
+using CleanArchitecture.Domain.Entities;
 using CleanArchitecture.Infrastructure.Identity;
 using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
@@ -26,6 +27,8 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
         _domainEventService = domainEventService;
         _dateTime = dateTime;
     }
+
+    public DbSet<Client> Clients { get; set; }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
     {

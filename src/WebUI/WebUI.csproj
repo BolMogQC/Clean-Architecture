@@ -88,6 +88,10 @@
       </Compile>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="wwwroot\api" />
+    </ItemGroup>
+
     <PropertyGroup>
         <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     </PropertyGroup>

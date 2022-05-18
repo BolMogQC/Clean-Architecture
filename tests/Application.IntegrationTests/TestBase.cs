@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System.Threading.Tasks;
+using Application.IntegrationTests;
+using NUnit.Framework;
 
 namespace CleanArchitecture.Application.IntegrationTests;
 
